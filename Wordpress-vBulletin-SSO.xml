@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="wordpressvbulletinsso" active="1">
+    <title>${project.name}</title>
+    <description>The WordPress vBulletin SSO allows you to synchronize the WordPress authentication with the vBulletin.</description>
+    <version>${project.version}</version>
+    <url>https://www.extreme-idea.com/</url>
+    <versioncheckurl/>
+
+    <dependencies>
+        <dependency dependencytype="vbulletin" minversion="4.1.1" maxversion="4.5.5"/>
+    </dependencies>
+
+    <plugins>
+        <plugin active="1" executionorder="1">
+            <title>WordPress vBulletin SSO: Lost password redirect</title>
+            <hookname>global_complete</hookname>
+            <phpcode><![CDATA[
+                if(basename($_SERVER['SCRIPT_NAME']) == 'login.php' && $_REQUEST['do'] == 'lostpw' && $vbulletin->options['wvsso_forgot_password_url']) {
+                    exec_header_redirect($vbulletin->options['wvsso_forgot_password_url']);
+                }
+            ]]>
+            </phpcode>
+        </plugin>
+        <plugin active="1" executionorder="1">
+            <title>WordPress vBulletin SSO: Logout redirect</title>
+            <hookname>global_complete</hookname>
+            <phpcode><![CDATA[
+                if(basename($_SERVER['SCRIPT_NAME']) == 'login.php' && $_REQUEST['do'] == 'logout') { 
+                    require_once(DIR . '/../wp-config.php'); 
+                    wp_destroy_current_session(); 
+                    wp_clear_auth_cookie(); 
+                }  
+            ]]>
+            </phpcode>
+        </plugin>
+        <plugin active="1" executionorder="1">
+            <title>WordPress vBulletin SSO: Login form redirect</title>
+            <hookname>error_generic</hookname>
+            <phpcode><![CDATA[
+				$loginform_templates = array('STANDARD_ERROR_LITE', 'STANDARD_ERROR_LOGIN');//'STANDARD_ERROR' is checked separately
+
+				global $vbulletin;
+				if (0 === $vbulletin->userinfo['userid'] && $vbulletin->options['wvsso_login_url']) {
+					if (in_array($templatename, $loginform_templates) || ('STANDARD_ERROR' == $templatename && isset($show) && ($show['permission_error'] OR $show['inlinemod_form']))) {
+						exec_header_redirect($vbulletin->options['wvsso_login_url']);
+					}
+				}
+            ]]>
+            </phpcode>
+        </plugin>
+        <plugin active="1" executionorder="1">
+            <title>WordPress vBulletin SSO: Change password redirect</title>
+            <hookname>profile_editpassword_start</hookname>
+            <phpcode><![CDATA[
+                if($vbulletin->options['wvsso_change_password_url']) {
+                   exec_header_redirect($vbulletin->options['wvsso_change_password_url']);
+                }
+                ]]>
+            </phpcode>
+        </plugin>
+        <plugin active="1" executionorder="1">
+            <title>WordPress vBulletin SSO: Registration redirect</title>
+            <hookname>register_start</hookname>
+            <phpcode><![CDATA[
+                if($vbulletin->options['wvsso_register_url']) {
+                   exec_header_redirect($vbulletin->options['wvsso_register_url']);
+                }
+            ]]>
+            </phpcode>
+        </plugin>
+    </plugins>
+
+    <phrases>
+        <phrasetype name="vBulletin Settings" fieldname="vbsettings">
+            <phrase name="settinggroup_sso" username="xeagle" version="1.0">
+                <![CDATA[WordPress vBulletin SSO]]>
+            </phrase>
+            <phrase name="setting_wvsso_login_url_title" username="xeagle" version="1.0">
+                <![CDATA["Login" Url]]>
+            </phrase>
+            <phrase name="setting_wvsso_login_url_desc" username="xeagle" version="1.0">
+                <![CDATA[Specify the URL to which the user will be redirected after the "Login" button is pressed.]]>
+            </phrase>
+            <phrase name="setting_wvsso_register_url_title" username="xeagle" version="1.0">
+                <![CDATA["Register" Url]]>
+            </phrase>
+            <phrase name="setting_wvsso_register_url_desc" username="xeagle" version="1.0">
+                <![CDATA[Specify the URL to which the user will be redirected after the "Register" button is pressed.]]>
+            </phrase>
+            <phrase name="setting_wvsso_forgot_password_url_title" username="xeagle" version="1.0">
+                <![CDATA["Lost Password" Url]]>
+            </phrase>
+            <phrase name="setting_wvsso_forgot_password_url_desc" username="xeagle" version="1.0">
+                <![CDATA[Specify the URL to which the user will be redirected after the "Lost Password" link is pressed.  ]]>
+            </phrase>
+            <phrase name="setting_wvsso_change_password_url_title" username="xeagle" version="1.0">
+                <![CDATA["Change Password and Email" Url]]>
+            </phrase>
+            <phrase name="setting_wvsso_change_password_url_desc" username="xeagle" version="1.0">
+                <![CDATA[Specify the URL to which the user will be redirected after the "Edit Email & Password" link is pressed.  ]]>
+            </phrase>
+            <phrase name="setting_wvsso_secondary_user_groups_title" username="xeagle" version="1.0">
+                <![CDATA[Secondary user groups]]>
+            </phrase>
+            <phrase name="setting_wvsso_secondary_user_groups_desc" username="xeagle" version="1.0">
+                <![CDATA[Specify the secondary group ID for newly registered users (separated by a comma).]]>
+            </phrase>
+        </phrasetype>
+    </phrases>
+    <options>
+        <settinggroup name="sso" displayorder="1">
+            <setting varname="wvsso_login_url" displayorder="10">
+                <datatype>free</datatype>
+                <defaultvalue></defaultvalue>
+            </setting>
+            <setting varname="wvsso_register_url" displayorder="20">
+                <datatype>free</datatype>
+                <defaultvalue></defaultvalue>
+            </setting>
+            <setting varname="wvsso_forgot_password_url" displayorder="30">
+                <datatype>free</datatype>
+                <defaultvalue></defaultvalue>
+            </setting>
+            <setting varname="wvsso_change_password_url" displayorder="40">
+                <datatype>free</datatype>
+                <defaultvalue></defaultvalue>
+            </setting>
+            <setting varname="wvsso_secondary_user_groups" displayorder="50">
+                <datatype>free</datatype>
+                <defaultvalue></defaultvalue>
+            </setting>
+        </settinggroup>
+    </options>
+    <helptopics>
+    </helptopics>
+    <cronentries>
+    </cronentries>
+    <faqentries>
+    </faqentries>
+</product>
